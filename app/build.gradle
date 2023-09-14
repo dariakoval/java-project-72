@@ -1,8 +1,9 @@
 plugins {
     id 'application'
     id 'checkstyle'
+    id "io.freefair.lombok" version "8.3"
     id 'com.adarshr.test-logger' version '3.2.0'
-    id 'com.github.ben-manes.versions' version '0.42.0'
+    id 'com.github.ben-manes.versions' version '0.47.0'
     id 'io.ebean' version '13.17.4'
     id 'jacoco'
 }
@@ -24,7 +25,7 @@ application {
 }
 
 dependencies {
-    implementation 'io.javalin:javalin:5.6.1'
+    implementation 'io.javalin:javalin:5.6.2'
     implementation 'io.javalin:javalin-rendering:5.6.1'
     implementation 'org.slf4j:slf4j-simple:2.0.9'
 
@@ -33,7 +34,8 @@ dependencies {
     implementation 'org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE'
     implementation 'org.webjars:bootstrap:5.2.3'
 
-    implementation 'com.h2database:h2:2.1.214'
+    implementation 'com.h2database:h2:2.2.222'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'org.postgresql:postgresql:42.5.4'
 
     implementation 'io.ebean:ebean:13.15.0'
