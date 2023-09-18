@@ -1,5 +1,6 @@
 package hexlet.code.controller;
 
+import hexlet.code.dto.BasePage;
 import hexlet.code.dto.urls.BuildUrlPage;
 import hexlet.code.dto.urls.UrlPage;
 import hexlet.code.dto.urls.UrlsPage;
@@ -8,8 +9,9 @@ import hexlet.code.repository.UrlsRepository;
 import hexlet.code.util.NamedRoutes;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
-import io.javalin.validation.ValidationException;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.Collections;
 
@@ -21,18 +23,30 @@ public class UrlsController {
 
     public static void create(Context ctx) throws SQLException {
         try {
-            var name = ctx.formParamAsClass("name", String.class)
-                    .check(value -> !value.isEmpty(), "Название не должно быть пустым")
-                    .get();
-            var url = new Url(name);
+            var inputParam = ctx.formParamAsClass("url", String.class).getOrDefault("");
+            URL inputUrl = new URL(inputParam);
+            String protocol = inputUrl.getProtocol();
+            String host = inputUrl.getHost();
+            int port = inputUrl.getPort();
+            URL customUrl = new URL(protocol, host, port, "");
+
+            if (UrlsRepository.existsByName(customUrl.toString().trim())) {
+                ctx.sessionAttribute("flash", "Страница уже существует");
+                ctx.sessionAttribute("flash-type", "info");
+                ctx.redirect(NamedRoutes.urlsPath());
+                return;
+            }
+
+            Url url = new Url(customUrl.toString().trim());
             UrlsRepository.save(url);
-            ctx.sessionAttribute("flash", "Url был успешно добавлен!");
+            ctx.sessionAttribute("flash", "Страница успешно добавлена");
             ctx.sessionAttribute("flash-type", "success");
             ctx.redirect(NamedRoutes.urlsPath());
-        } catch (ValidationException e) {
-            var name = ctx.formParam("name");
-            var page = new BuildUrlPage(name, e.getErrors());
-            ctx.render("urls/build.jte", Collections.singletonMap("page", page)).status(422);
+
+        } catch (MalformedURLException e) {
+            ctx.sessionAttribute("flash", "Некорректный URL");
+            ctx.sessionAttribute("flash-type", "danger");
+            ctx.redirect(NamedRoutes.rootPath());
         }
     }
 
