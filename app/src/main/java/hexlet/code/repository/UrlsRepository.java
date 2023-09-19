@@ -1,12 +1,12 @@
 package hexlet.code.repository;
 
+import hexlet.code.dto.urls.UrlsData;
 import hexlet.code.model.Url;
 
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class UrlsRepository extends BaseRepository {
@@ -41,8 +41,9 @@ public class UrlsRepository extends BaseRepository {
             if (resultSet.next()) {
                 var name = resultSet.getString("name");
                 var createdAt = resultSet.getTimestamp("created_at");
-                var url = new Url(name, createdAt);
+                var url = new Url(name);
                 url.setId(id);
+                url.setCreatedAt(createdAt);
 
                 return Optional.of(url);
             }
@@ -62,8 +63,9 @@ public class UrlsRepository extends BaseRepository {
             if (resultSet.next()) {
                 var id = resultSet.getLong("id");
                 var createdAt = resultSet.getTimestamp("created_at");
-                var url = new Url(name, createdAt);
+                var url = new Url(name);
                 url.setId(id);
+                url.setCreatedAt(createdAt);
 
                 return Optional.of(url);
             }
@@ -76,24 +78,35 @@ public class UrlsRepository extends BaseRepository {
         return find(name).isPresent();
     }
 
-    public static List<Url> getEntities() throws SQLException {
-        var sql = "SELECT * FROM urls";
+    public static UrlsData findEntities(int page, int rowsPerPage) throws SQLException {
+        var offset = page * rowsPerPage;
+        var sql = String.format("""
+            SELECT *, COUNT(*) OVER () AS TotalCount FROM urls
+            ORDER BY id LIMIT %d OFFSET %d;
+            """, rowsPerPage, offset);
+        var urls = new ArrayList<Url>();
+        var totalCount = 0;
 
         try (var conn = dataSource.getConnection();
                 var stmt = conn.prepareStatement(sql)) {
             var resultSet = stmt.executeQuery();
-            var result = new ArrayList<Url>();
+
 
             while (resultSet.next()) {
                 var id = resultSet.getLong("id");
                 var name = resultSet.getString("name");
-                var datetime = resultSet.getTimestamp("created_at");
-                var url = new Url(name, datetime);
+                var createdAt = resultSet.getTimestamp("created_at");
+                var url = new Url(name);
                 url.setId(id);
-                result.add(url);
+                url.setCreatedAt(createdAt);
+                urls.add(url);
+                totalCount = resultSet.getInt("TotalCount");
             }
 
-            return result;
         }
+
+        var result = new UrlsData(urls, totalCount);
+        return result;
+
     }
 }

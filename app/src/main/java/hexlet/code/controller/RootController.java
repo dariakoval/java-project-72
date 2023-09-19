@@ -1,6 +1,5 @@
 package hexlet.code.controller;
 
-import hexlet.code.dto.BasePage;
 import hexlet.code.dto.urls.BuildUrlPage;
 import io.javalin.http.Context;
 

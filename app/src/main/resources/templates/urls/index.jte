@@ -1,9 +1,13 @@
 @import hexlet.code.dto.urls.UrlsPage
 @import hexlet.code.util.NamedRoutes
+@import java.time.format.DateTimeFormatter
 @param UrlsPage page
 
-@template.layout.page(
+!{var formatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");}
+!{var pages = page.getPages();}
+!{var currentPage = page.getCurrentPage();}
 
+@template.layout.page(
 page = page,
 content = @`
     <section>
@@ -33,24 +37,24 @@ content = @`
                 </tbody>
             </table>
 
+    @if(pages.size() > 0)
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center mt-5">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="/urls?page=0">Previous</a>
+                    <li class='${"page-item" + (currentPage <= 1 ? " disabled" : "")}'>
+                        <a class="page-link" href="${NamedRoutes.urlsPath()}?page=${currentPage - 1}">Previous</a>
                     </li>
-                    <li class="page-item active">
-                        <a class="page-link" href="/urls?page=1">1</a>
+                @for(var pageNumber : pages)
+                    <li class='${"page-item" + (currentPage == pageNumber ? " active" : "")}'>
+                        <a class="page-link" href="${NamedRoutes.urlsPath()}?page=${pageNumber}">${pageNumber}</a>
                     </li>
-                    <li class="page-item disabled">
-                        <a class="page-link" href="/urls?page=2">Next</a>
+                @endfor
+                    <li class='${"page-item" + (currentPage >= pages.size() ? " disabled" : "")}'>
+                        <a class="page-link" href="${NamedRoutes.urlsPath()}?page=${currentPage + 1}">Next</a>
                     </li>
                 </ul>
             </nav>
+    @endif
         </div>
     </section>
-`,
-footer = @`
-    created by
-    <a href="https://github.com/dariakoval" target="_blank">Darya Koval</a>
 `
 )

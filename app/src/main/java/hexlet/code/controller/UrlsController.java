@@ -1,8 +1,7 @@
 package hexlet.code.controller;
 
-import hexlet.code.dto.BasePage;
-import hexlet.code.dto.urls.BuildUrlPage;
 import hexlet.code.dto.urls.UrlPage;
+import hexlet.code.dto.urls.UrlsData;
 import hexlet.code.dto.urls.UrlsPage;
 import hexlet.code.model.Url;
 import hexlet.code.repository.UrlsRepository;
@@ -14,13 +13,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class UrlsController {
-    public static void build(Context ctx) {
-        var page = new BuildUrlPage();
-        ctx.render("urls/build.jte", Collections.singletonMap("page", page));
-    }
-
+    private static final int ROWS_PER_PAGE = 12;
     public static void create(Context ctx) throws SQLException {
         try {
             var inputParam = ctx.formParamAsClass("url", String.class).getOrDefault("");
@@ -51,8 +49,22 @@ public class UrlsController {
     }
 
     public static void index(Context ctx) throws SQLException {
-        var urls = UrlsRepository.getEntities();
-        var page = new UrlsPage(urls);
+        int currentPage = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
+        int rowsPerPage = ROWS_PER_PAGE;
+
+        UrlsData urlsData = UrlsRepository.findEntities(currentPage - 1, rowsPerPage);
+
+        List<Url> urls = urlsData.getUrls();
+        int count = urlsData.getTotalCount();
+
+        var lastPage = (int) Math.ceil((float) count / rowsPerPage);
+        List<Integer> pages = IntStream
+                .range(1, lastPage + 1)
+                .boxed()
+                .collect(Collectors.toList());
+
+        var page = new UrlsPage(urls, currentPage, pages);
+
         page.setFlash(ctx.consumeSessionAttribute("flash"));
         page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
         ctx.render("urls/index.jte", Collections.singletonMap("page", page));

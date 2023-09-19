@@ -3,13 +3,9 @@
 @param BuildUrlPage page
 
 @template.layout.page(
+    page = page,
 content = @`
     <section>
-        @if(page != null && page.getFlash() != null)
-            <div class="alert alert-${page.getFlashType()}" role="alert">
-                ${page.getFlash()}
-            </div>
-        @endif
         <div class="container-fluid bg-dark p-5">
             <div class="row">
                 <div class="col-md-10 col-lg-8 mx-auto text-white">
@@ -34,9 +30,5 @@ content = @`
             </div>
         </div>
     </section>
-`,
-footer = @`
-    created by
-    <a href="https://github.com/dariakoval" target="_blank">Darya Koval</a>
 `
 )
