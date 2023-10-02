@@ -21,7 +21,10 @@ public class UrlsController {
     private static final int ROWS_PER_PAGE = 12;
     public static void create(Context ctx) throws SQLException {
         try {
-            var inputParam = ctx.formParamAsClass("url", String.class).getOrDefault("");
+            var inputParam = ctx.formParamAsClass("url", String.class)
+                    .getOrDefault("")
+                    .trim()
+                    .toLowerCase();
             URL inputUrl = new URL(inputParam);
             String protocol = inputUrl.getProtocol();
             String host = inputUrl.getHost();
