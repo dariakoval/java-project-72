@@ -4,4 +4,6 @@ import hexlet.code.dto.BasePage;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class BuildUrlPage extends BasePage {}
+public class BuildUrlPage extends BasePage {
+
+}

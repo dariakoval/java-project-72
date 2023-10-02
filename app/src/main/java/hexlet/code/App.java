@@ -73,7 +73,7 @@ public class App {
                     """;
         }
         log.info(sql);
-        try(var connection = dataSource.getConnection();
+        try (var connection = dataSource.getConnection();
                 var statement = connection.createStatement()) {
             statement.execute(sql);
         }
