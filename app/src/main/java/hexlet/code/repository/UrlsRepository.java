@@ -82,7 +82,7 @@ public class UrlsRepository extends BaseRepository {
         var offset = page * rowsPerPage;
         var sql = String.format("""
             SELECT *, COUNT(*) OVER () AS TotalCount FROM urls
-            ORDER BY id LIMIT %d OFFSET %d;
+            ORDER BY id LIMIT %d OFFSET %d
             """, rowsPerPage, offset);
         var urls = new ArrayList<Url>();
         var totalCount = 0;
@@ -90,7 +90,6 @@ public class UrlsRepository extends BaseRepository {
         try (var conn = dataSource.getConnection();
                 var stmt = conn.prepareStatement(sql)) {
             var resultSet = stmt.executeQuery();
-
 
             while (resultSet.next()) {
                 var id = resultSet.getLong("id");
@@ -105,8 +104,7 @@ public class UrlsRepository extends BaseRepository {
 
         }
 
-        var result = new UrlsData(urls, totalCount);
-        return result;
+        return new UrlsData(urls, totalCount);
 
     }
 }

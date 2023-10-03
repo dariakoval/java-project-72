@@ -1,6 +1,6 @@
 package hexlet.code.dto.urls;
 
-import hexlet.code.model.Url;
+import hexlet.code.model.UrlCheck;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,9 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-public final class UrlsData {
+public class UrlChecksData {
 
-    private List<Url> urls;
-
-    private int totalCount;
+    private List<UrlCheck> urlChecks;
 }

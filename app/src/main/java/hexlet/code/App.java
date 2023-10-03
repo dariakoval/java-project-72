@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import gg.jte.resolve.ResourceCodeResolver;
 import hexlet.code.controller.RootController;
+import hexlet.code.controller.UrlChecksController;
 import hexlet.code.controller.UrlsController;
 import hexlet.code.repository.BaseRepository;
 import hexlet.code.util.NamedRoutes;
@@ -70,6 +71,17 @@ public class App {
                         name VARCHAR(255) NOT NULL,
                         created_at TIMESTAMP NOT NULL
                     );
+                    DROP TABLE IF EXISTS url_checks;
+                    CREATE TABLE url_checks
+                    (
+                        id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+                        url_id BIGINT REFERENCES urls (id) NOT NULL,
+                        status_code INTEGER,
+                        h1 VARCHAR(255),
+                        title VARCHAR(255),
+                        description TEXT,
+                        created_at TIMESTAMP NOT NULL
+                    );
                     """;
         }
         log.info(sql);
@@ -94,6 +106,7 @@ public class App {
         app.get(NamedRoutes.urlsPath(), UrlsController::index);
         app.get(NamedRoutes.urlPath("{id}"), UrlsController::show);
         app.post(NamedRoutes.urlsPath(), UrlsController::create);
+        app.post(NamedRoutes.checksPath("{id}"), UrlChecksController::addCheck);
 
         return app;
     }
@@ -101,8 +114,7 @@ public class App {
     private static TemplateEngine createTemplateEngine() {
         ClassLoader classLoader = App.class.getClassLoader();
         ResourceCodeResolver codeResolver = new ResourceCodeResolver("templates", classLoader);
-        TemplateEngine templateEngine = TemplateEngine.create(codeResolver, ContentType.Html);
-        return templateEngine;
+        return TemplateEngine.create(codeResolver, ContentType.Html);
     }
 
     public static void main(String[] args) throws SQLException, IOException {

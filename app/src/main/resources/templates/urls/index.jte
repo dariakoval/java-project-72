@@ -1,6 +1,8 @@
 @import hexlet.code.dto.urls.UrlsPage
 @import hexlet.code.util.NamedRoutes
+@import java.sql.Timestamp
 @import java.time.format.DateTimeFormatter
+@import java.util.Map
 @param UrlsPage page
 
 !{var formatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");}
@@ -24,14 +26,16 @@ content = @`
                 </tr>
                 </thead>
                 <tbody>
-                    @for(var url : page.getUrls())
+                    @for(Map<String, Object> url : page.getUrls())
                 <tr>
-                    <td>${url.getId()}</td>
+                    <td>${(Long) url.get("id")}</td>
                     <td>
-                        <a href="${NamedRoutes.urlPath(url.getId())}">${url.getName()}</a>
+                        <a href="${NamedRoutes.urlPath((Long) url.get("id"))}">${(String) url.get("name")}</a>
                     </td>
                     <td></td>
                     <td></td>
+<%--                    <td>${((Timestamp) url.get("datetime")).toLocalDateTime().format(formatter)}</td>--%>
+<%--                    <td>${(Integer) url.get("statusCode")}</td>--%>
                 </tr>
                     @endfor
                 </tbody>
