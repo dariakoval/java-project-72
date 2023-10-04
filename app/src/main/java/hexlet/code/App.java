@@ -64,14 +64,14 @@ public class App {
                     .collect(Collectors.joining("\n"));
         } catch (NoSuchFileException e) {
             sql = """
-                    DROP TABLE IF EXISTS urls;
+                    DROP TABLE IF EXISTS urls CASCADE;
                     CREATE TABLE urls
                     (
                         id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                         name VARCHAR(255) NOT NULL,
                         created_at TIMESTAMP NOT NULL
                     );
-                    DROP TABLE IF EXISTS url_checks;
+                    DROP TABLE IF EXISTS url_checks CASCADE;
                     CREATE TABLE url_checks
                     (
                         id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

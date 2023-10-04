@@ -13,7 +13,6 @@ import io.javalin.http.NotFoundResponse;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,21 +69,8 @@ public class UrlsController {
         var result = new ArrayList<Map<String, Object>>();
 
         for (Url url: urls) {
-            var lastCheck = UrlChecksRepository.findLastCheck(url.getId());
-
-            if (lastCheck.isEmpty()) {
-                result.add(Map.of("id", url.getId(), "name", url.getName(),
-                        "datetime", "", "statusCode", ""));
-
-            } else {
-//                Map<String, Object> map = lastCheck.get();
-//                Timestamp datetime = (Timestamp) (map).get("createdAt");
-//                int statusCode = (int) (map).get("statusCode");
-                result.add(Map.of("id", url.getId(), "name", url.getName(),
-                        "datetime", "", "statusCode", ""));
-//                result.add(Map.of("id", url.getId(), "name", url.getName(),
-//                        "datetime", datetime, "statusCode", statusCode));
-            }
+            var lastCheck = UrlChecksRepository.findLastCheck(url.getId(), url.getName());
+            result.add(lastCheck);
         }
 
         var page = new UrlsPage(result, currentPage, pages);

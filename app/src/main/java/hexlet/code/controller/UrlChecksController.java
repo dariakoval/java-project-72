@@ -8,10 +8,11 @@ import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.sql.SQLException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class UrlChecksController {
     public static void addCheck(Context ctx) throws SQLException {
@@ -21,21 +22,15 @@ public class UrlChecksController {
 
         String urlName = url.getName();
         HttpResponse<String> response = Unirest.get(urlName).asString();
+        Document document = Jsoup.parse(response.getBody());
+
         int statusCode = response.getStatus();
-        String body = response.getBody();
+        String title = document.title();
 
-        Matcher matcher = Pattern.compile("(<head>[\\s\\S]*?<title>)(?<title>[\\s\\S]*?)(?=</title>)" +
-                "([\\s\\S]*?\"description\"[\\s\\S]*?content=\")(?<description>[\\s\\S]*?)(?=\">)" +
-                "([\\s\\S]*?<h1[\\s\\S]*?>)(?<h1>[\\s\\S]*?)(?=</h1>)").matcher(body);
-        String title = "";
-        String description = "";
-        String h1 = "";
+        Element h1Element = document.selectFirst("h1");
+        String h1 = h1Element != null ? h1Element.text() : "";
 
-        while (matcher.find()){
-            title = matcher.group("title");
-            description = matcher.group("description");
-            h1 = matcher.group("h1");
-        }
+        String description = document.getElementsByAttributeValue("name", "description").attr("content");
 
         UrlCheck urlCheck = new UrlCheck(statusCode, title, h1, description, urlId);
         UrlChecksRepository.save(urlCheck);

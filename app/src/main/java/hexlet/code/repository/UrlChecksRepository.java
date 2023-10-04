@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Optional;
 
 public class UrlChecksRepository extends BaseRepository {
     public static void save(UrlCheck urlCheck) throws SQLException {
@@ -65,9 +64,9 @@ public class UrlChecksRepository extends BaseRepository {
         return new UrlChecksData(urlChecks);
     }
 
-    public static Optional<Map<String, Object>> findLastCheck(Long urlId) throws SQLException {
+    public static Map<String, Object> findLastCheck(Long urlId, String name) throws SQLException {
         String sql = String.format("""
-            SELECT status_code, MAX(created_at)
+            SELECT status_code, MAX(created_at) AS created_at
             FROM url_checks GROUP BY url_id, status_code
             HAVING url_id = %d
             """, urlId);
@@ -80,10 +79,11 @@ public class UrlChecksRepository extends BaseRepository {
                 var statusCode = resultSet.getInt("status_code");
                 var createdAt = resultSet.getTimestamp("created_at");
 
-                return Optional.of(Map.of("statusCode", statusCode, "createdAt", createdAt));
+                return Map.of("id", urlId, "name", name,
+                        "statusCode", statusCode, "createdAt", createdAt);
             }
 
-            return Optional.empty();
+            return Map.of("id", urlId, "name", name);
         }
     }
 }

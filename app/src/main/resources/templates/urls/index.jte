@@ -32,10 +32,12 @@ content = @`
                     <td>
                         <a href="${NamedRoutes.urlPath((Long) url.get("id"))}">${(String) url.get("name")}</a>
                     </td>
-                    <td></td>
-                    <td></td>
-<%--                    <td>${((Timestamp) url.get("datetime")).toLocalDateTime().format(formatter)}</td>--%>
-<%--                    <td>${(Integer) url.get("statusCode")}</td>--%>
+                    <td>
+                        ${url.get("createdAt") == null ? "" : ((Timestamp) url.get("createdAt")).toLocalDateTime().format(formatter)}
+                    </td>
+                    <td>
+                        ${url.get("statusCode") == null ? "" : url.get("statusCode").toString()}
+                    </td>
                 </tr>
                     @endfor
                 </tbody>
