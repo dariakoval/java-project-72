@@ -6,7 +6,7 @@ CREATE TABLE urls (
     created_at TIMESTAMP NOT NULL
 );
 
-DROP TABLE IF EXISTS url_checks CASCADE;
+DROP TABLE IF EXISTS url_checks;
 
 CREATE TABLE url_checks (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,

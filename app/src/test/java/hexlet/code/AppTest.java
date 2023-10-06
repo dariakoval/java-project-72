@@ -75,4 +75,15 @@ public class AppTest {
             assertThat(response.code()).isEqualTo(404);
         }));
     }
+
+    @Test
+    public void testAddUrlCheck() throws Exception {
+        var url = new Url("https://mail.ru");
+        UrlsRepository.save(url);
+        JavalinTest.test(app, ((server, client) -> {
+            var response = client.post("/urls/" + url.getId() + "/checks");
+            assertThat(response.code()).isEqualTo(200);
+            assertThat(response.body().string()).contains("Mail.ru: почта, поиск в интернете, новости, игры");
+        }));
+    }
 }
