@@ -34,28 +34,31 @@ public class App {
     }
 
     private static String getMode() {
-        return System.getenv().getOrDefault("APP_ENV", "production");
+        return System.getenv().getOrDefault("APP_ENV", "development");
     }
 
     private static boolean isProduction() {
         return getMode().equals("production");
     }
 
-    private static HikariConfig getHikariConfig() {
-        var hikariConfig = new HikariConfig();
-
-        if (isProduction()) {
-            hikariConfig.setJdbcUrl("jdbc:postgresql://dpg-cj5pddqcn0vc73f895cg-a:5432/example_base");
-            hikariConfig.setUsername("example_base_user");
-            hikariConfig.setPassword("ZxYV34oq7oO4tBGfIoTz6cOmIBDUwRhg");
-            return hikariConfig;
-        }
-        hikariConfig.setJdbcUrl("jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;");
-        return hikariConfig;
-    }
+//    private static HikariConfig getHikariConfig() {
+//        var hikariConfig = new HikariConfig();
+//
+//        if (isProduction()) {
+//            hikariConfig.setJdbcUrl("jdbc:postgresql://dpg-cj5pddqcn0vc73f895cg-a:5432/example_base");
+//            hikariConfig.setUsername("example_base_user");
+//            hikariConfig.setPassword("ZxYV34oq7oO4tBGfIoTz6cOmIBDUwRhg");
+//            return hikariConfig;
+//        }
+//        hikariConfig.setJdbcUrl("jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;");
+//        return hikariConfig;
+//    }
 
     public static Javalin getApp() throws IOException, SQLException {
-        var dataSource = new HikariDataSource(getHikariConfig());
+        var hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(getDatabaseUrl());
+
+        var dataSource = new HikariDataSource(hikariConfig);
         String sql;
         try {
             var url = App.class.getClassLoader().getResource("schema.sql");
@@ -93,7 +96,9 @@ public class App {
         BaseRepository.dataSource = dataSource;
 
         var app = Javalin.create(config -> {
-            config.plugins.enableDevLogging();
+            if (!isProduction()) {
+                config.plugins.enableDevLogging();
+            }
         });
 
         app.before(ctx -> {
