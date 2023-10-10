@@ -3,10 +3,15 @@ package hexlet.code;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 
 import hexlet.code.model.Url;
 import hexlet.code.repository.UrlsRepository;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +20,16 @@ import io.javalin.testtools.JavalinTest;
 
 public class AppTest {
     Javalin app;
+
+    private static Path getFixturePath(String fileName) {
+        return Paths.get("src", "test", "resources", "fixtures", fileName)
+                .toAbsolutePath().normalize();
+    }
+
+    private static String readFixture(String fileName) throws Exception {
+        Path filePath = getFixturePath(fileName);
+        return Files.readString(filePath).trim();
+    }
 
     @BeforeEach
     public final void setUp() throws IOException, SQLException {
@@ -78,12 +93,21 @@ public class AppTest {
 
     @Test
     public void testAddUrlCheck() throws Exception {
-        var url = new Url("https://mail.ru");
+        MockWebServer mockServer = new MockWebServer();
+        String baseUrl = mockServer.url("/").toString();
+        MockResponse mockResponse = new MockResponse().setBody(readFixture("index.html"));
+        mockServer.enqueue(mockResponse);
+
+        var url = new Url(baseUrl);
         UrlsRepository.save(url);
+
         JavalinTest.test(app, ((server, client) -> {
             var response = client.post("/urls/" + url.getId() + "/checks");
             assertThat(response.code()).isEqualTo(200);
-            assertThat(response.body().string()).contains("Mail.ru: почта, поиск в интернете, новости, игры");
+            assertThat(response.body().string()).contains("Example Title");
         }));
+
+        mockServer.shutdown();
+
     }
 }
