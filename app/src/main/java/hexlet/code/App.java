@@ -48,17 +48,11 @@ public class App {
         var dataSource = new HikariDataSource(hikariConfig);
         String sql;
         try {
-            if (System.getenv("JDBC_DATABASE_URL") == null) {
-                var url = App.class.getClassLoader().getResource("schema_h2.sql");
-                var file = new File(url.getFile());
-                sql = Files.lines(file.toPath())
-                        .collect(Collectors.joining("\n"));
-            } else {
-                var url = App.class.getClassLoader().getResource("schema_psql.sql");
-                var file = new File(url.getFile());
-                sql = Files.lines(file.toPath())
-                        .collect(Collectors.joining("\n"));
-            }
+            var url = App.class.getClassLoader().getResource("schema.sql");
+            var file = new File(url.getFile());
+            sql = Files.lines(file.toPath())
+                    .collect(Collectors.joining("\n"));
+
         } catch (NoSuchFileException e) {
             sql = """
                     DROP TABLE IF EXISTS urls CASCADE;
