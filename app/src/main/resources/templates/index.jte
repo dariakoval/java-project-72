@@ -1,10 +1,10 @@
-@import hexlet.code.dto.urls.BuildUrlPage
+@import hexlet.code.dto.BasePage
 @import hexlet.code.util.NamedRoutes
-@param BuildUrlPage page
+@param BasePage page
 
 @template.layout.page(
     page = page,
-content = @`
+    content = @`
     <section>
         <div class="container-fluid bg-dark p-5">
             <div class="row">

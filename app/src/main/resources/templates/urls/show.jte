@@ -3,7 +3,7 @@
 @import java.time.format.DateTimeFormatter
 @param UrlPage page
 
-!{var formatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");}
+!{var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");}
 !{var url = page.getUrl();}
 !{var checks = page.getUrlChecks();}
 

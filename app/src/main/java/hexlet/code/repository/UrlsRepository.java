@@ -1,12 +1,12 @@
 package hexlet.code.repository;
 
-import hexlet.code.dto.urls.UrlsData;
 import hexlet.code.model.Url;
 
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class UrlsRepository extends BaseRepository {
@@ -56,7 +56,7 @@ public class UrlsRepository extends BaseRepository {
         var sql = "SELECT * FROM urls WHERE name = ?";
 
         try (var conn = dataSource.getConnection();
-             var stmt = conn.prepareStatement(sql)) {
+                var stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, name);
             var resultSet = stmt.executeQuery();
 
@@ -78,18 +78,17 @@ public class UrlsRepository extends BaseRepository {
         return find(name).isPresent();
     }
 
-    public static UrlsData findEntities(int page, int rowsPerPage) throws SQLException {
+    public static List<Url> findEntities(int page, int rowsPerPage) throws SQLException {
         var offset = page * rowsPerPage;
         var sql = String.format("""
-            SELECT *, COUNT(*) OVER () AS TotalCount FROM urls
+            SELECT * FROM urls
             ORDER BY id LIMIT %d OFFSET %d
             """, rowsPerPage, offset);
-        var urls = new ArrayList<Url>();
-        var totalCount = 0;
 
         try (var conn = dataSource.getConnection();
                 var stmt = conn.prepareStatement(sql)) {
             var resultSet = stmt.executeQuery();
+            var urls = new ArrayList<Url>();
 
             while (resultSet.next()) {
                 var id = resultSet.getLong("id");
@@ -99,12 +98,36 @@ public class UrlsRepository extends BaseRepository {
                 url.setId(id);
                 url.setCreatedAt(createdAt);
                 urls.add(url);
-                totalCount = resultSet.getInt("TotalCount");
             }
 
+            return urls;
         }
+    }
 
-        return new UrlsData(urls, totalCount);
+    public static Optional<Integer> getTotalCount() throws SQLException {
+        var sql = "SELECT COUNT(*) AS count FROM urls";
 
+        try (var conn = dataSource.getConnection();
+                var stmt = conn.prepareStatement(sql)) {
+            var resultSet = stmt.executeQuery();
+
+            if (resultSet.next()) {
+                var count = resultSet.getInt("count");
+
+                return Optional.of(count);
+            }
+
+            return Optional.empty();
+        }
+    }
+
+    public static void delete(Long id) throws SQLException {
+        var sql = "DELETE FROM urls WHERE id = ?";
+
+        try (var conn = dataSource.getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            stmt.execute();
+        }
     }
 }

@@ -1,6 +1,8 @@
 package hexlet.code.dto.urls;
 
 import hexlet.code.dto.BasePage;
+import hexlet.code.model.Url;
+import hexlet.code.model.UrlCheck;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,7 +13,9 @@ import java.util.Map;
 @Getter
 public class UrlsPage  extends BasePage {
 
-    private List<Map<String, Object>> urls;
+    private List<Url> urls;
+
+    private Map<Long, UrlCheck> urlChecks;
 
     private int currentPage;
 

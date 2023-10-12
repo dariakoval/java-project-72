@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 
 import hexlet.code.model.Url;
+import hexlet.code.repository.UrlChecksRepository;
 import hexlet.code.repository.UrlsRepository;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -19,6 +20,7 @@ import io.javalin.Javalin;
 import io.javalin.testtools.JavalinTest;
 
 public class AppTest {
+    private static final String FIXTURE_NAME_FOR_RESPONSE_BODY = "index.html";
     Javalin app;
 
     private static Path getFixturePath(String fileName) {
@@ -41,6 +43,7 @@ public class AppTest {
         JavalinTest.test(app, ((server, client) -> {
             var response = client.get("/");
             assertThat(response.code()).isEqualTo(200);
+            assertThat(response.body()).isNotNull();
             assertThat(response.body().string()).contains("Бесплатно проверяйте сайты на SEO пригодность");
         }));
     }
@@ -58,7 +61,9 @@ public class AppTest {
         JavalinTest.test(app, ((server, client) -> {
             var requestBody = "url=https://www.examplename.com";
             var response = client.post("/urls", requestBody);
+
             assertThat(response.code()).isEqualTo(200);
+            assertThat(response.body()).isNotNull();
             assertThat(response.body().string()).contains("https://www.examplename.com");
         }));
     }
@@ -69,7 +74,19 @@ public class AppTest {
             var requestBody = "url=https://some-domain.org:8080/example/path";
             var response = client.post("/urls", requestBody);
             assertThat(response.code()).isEqualTo(200);
+            assertThat(response.body()).isNotNull();
             assertThat(response.body().string()).contains("https://some-domain.org:8080");
+        }));
+    }
+
+    @Test
+    public void testInvalidUrl() {
+        JavalinTest.test(app, ((server, client) -> {
+            var requestBody = "url=invalid-url";
+            var response = client.post("/urls", requestBody);
+            assertThat(response.code()).isEqualTo(200);
+            assertThat(response.body()).isNotNull();
+            assertThat(response.body().string()).contains("Бесплатно проверяйте сайты на SEO пригодность");
         }));
     }
 
@@ -84,30 +101,40 @@ public class AppTest {
     }
 
     @Test
-    public void testUrlNotFound() {
+    public void testUrlNotFound() throws SQLException {
+        Long id = 999999L;
+        UrlsRepository.delete(id);
         JavalinTest.test(app, ((server, client) -> {
-            var response = client.get("/urls/999999");
+            var response = client.get("/urls/" + id);
             assertThat(response.code()).isEqualTo(404);
         }));
     }
 
     @Test
     public void testAddUrlCheck() throws Exception {
-        MockWebServer mockServer = new MockWebServer();
-        String baseUrl = mockServer.url("/").toString();
-        MockResponse mockResponse = new MockResponse().setBody(readFixture("index.html"));
-        mockServer.enqueue(mockResponse);
+        try (MockWebServer mockServer = new MockWebServer()) {
+            String baseUrl = mockServer.url("/").toString();
+            MockResponse mockResponse = new MockResponse().setBody(readFixture(FIXTURE_NAME_FOR_RESPONSE_BODY));
+            mockServer.enqueue(mockResponse);
 
-        var url = new Url(baseUrl);
-        UrlsRepository.save(url);
+            var actualUrl = new Url(baseUrl);
+            UrlsRepository.save(actualUrl);
 
-        JavalinTest.test(app, ((server, client) -> {
-            var response = client.post("/urls/" + url.getId() + "/checks");
-            assertThat(response.code()).isEqualTo(200);
-            assertThat(response.body().string()).contains("Example Title");
-        }));
+            JavalinTest.test(app, ((server, client) -> {
+                var response = client.post("/urls/" + actualUrl.getId() + "/checks");
 
-        mockServer.shutdown();
+                var actualCheckUrl = UrlChecksRepository.findLatestChecks().get(actualUrl.getId());
 
+                assertThat(actualCheckUrl).isNotNull();
+                assertThat(actualCheckUrl.getStatusCode()).isEqualTo(200);
+                assertThat(actualCheckUrl.getTitle()).isEqualTo("Example Title");
+                assertThat(actualCheckUrl.getH1()).isEqualTo("Example Page");
+                assertThat(actualCheckUrl.getDescription()).isEqualTo("test page for education project");
+
+                assertThat(response.code()).isEqualTo(200);
+                assertThat(response.body()).isNotNull();
+                assertThat(response.body().string()).contains("Example Title");
+            }));
+        }
     }
 }

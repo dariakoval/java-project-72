@@ -1,47 +1,52 @@
 @import hexlet.code.dto.urls.UrlsPage
 @import hexlet.code.util.NamedRoutes
-@import java.sql.Timestamp
 @import java.time.format.DateTimeFormatter
-@import java.util.Map
 @param UrlsPage page
 
-!{var formatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");}
+!{var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");}
 !{var pages = page.getPages();}
 !{var currentPage = page.getCurrentPage();}
+!{var urls = page.getUrls();}
+!{var urlChecks = page.getUrlChecks();}
 
 @template.layout.page(
-page = page,
-content = @`
-    <section>
-        <div class="container-lg mt-5">
-            <h1>Сайты</h1>
+    page = page,
+    content = @`
+        <section>
+            <div class="container-lg mt-5">
+                <h1>Сайты</h1>
 
-            <table class="table table-bordered table-hover mt-3">
-                <thead>
-                <tr>
-                    <th class="col-1">ID</th>
-                    <th>Имя</th>
-                    <th class="col-2">Последняя проверка</th>
-                    <th class="col-1">Код ответа</th>
-                </tr>
-                </thead>
-                <tbody>
-                    @for(Map<String, Object> url : page.getUrls())
-                <tr>
-                    <td>${(Long) url.get("id")}</td>
-                    <td>
-                        <a href="${NamedRoutes.urlPath((Long) url.get("id"))}">${(String) url.get("name")}</a>
-                    </td>
-                    <td>
-                        ${url.get("createdAt") == null ? "" : ((Timestamp) url.get("createdAt")).toLocalDateTime().format(formatter)}
-                    </td>
-                    <td>
-                        ${url.get("statusCode") == null ? "" : url.get("statusCode").toString()}
-                    </td>
-                </tr>
+                <table class="table table-bordered table-hover mt-3">
+                    <thead>
+                        <tr>
+                            <th class="col-1">ID</th>
+                            <th>Имя</th>
+                            <th class="col-2">Последняя проверка</th>
+                            <th class="col-1">Код ответа</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @for(var url: urls)
+                        <tr>
+                            <td>${url.getId()}</td>
+                            <td>
+                                <a href="${NamedRoutes.urlPath(url.getId())}">${url.getName()}</a>
+                            </td>
+                            @if(urlChecks.containsKey(url.getId()))
+                                <td>
+                                    ${urlChecks.get(url.getId()).getCreatedAt().toLocalDateTime().format(formatter)}
+                                </td>
+                                <td>
+                                    ${urlChecks.get(url.getId()).getStatusCode()}
+                                </td>
+                            @else
+                                <td></td>
+                                <td></td>
+                            @endif
+                        </tr>
                     @endfor
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
 
     @if(pages.size() > 0)
             <nav aria-label="Page navigation">
@@ -60,7 +65,7 @@ content = @`
                 </ul>
             </nav>
     @endif
-        </div>
-    </section>
-`
+            </div>
+        </section>
+    `
 )
