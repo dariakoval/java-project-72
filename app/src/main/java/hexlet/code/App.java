@@ -11,10 +11,11 @@ import hexlet.code.util.NamedRoutes;
 import lombok.extern.slf4j.Slf4j;
 import io.javalin.Javalin;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
@@ -41,40 +42,25 @@ public class App {
         return getMode().equals("production");
     }
 
+    private static InputStream getFileFromResourceAsStream(String fileName) {
+        ClassLoader classLoader = App.class.getClassLoader();
+        InputStream is = classLoader.getResourceAsStream(fileName);
+        return is;
+    }
+
+    private static String getContentFromStream(InputStream is) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        }
+    }
+
     public static Javalin getApp() throws IOException, SQLException {
         var hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(getDatabaseUrl());
 
         var dataSource = new HikariDataSource(hikariConfig);
-        String sql;
-        try {
-            var url = App.class.getClassLoader().getResource("schema.sql");
-            var file = new File(url.getFile());
-            sql = Files.lines(file.toPath())
-                    .collect(Collectors.joining("\n"));
+        String sql = getContentFromStream(getFileFromResourceAsStream("schema.sql"));
 
-        } catch (NoSuchFileException e) {
-            sql = """
-                    DROP TABLE IF EXISTS urls CASCADE;
-                    CREATE TABLE urls
-                    (
-                        id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-                        name VARCHAR(255) NOT NULL,
-                        created_at TIMESTAMP NOT NULL
-                    );
-                    DROP TABLE IF EXISTS url_checks;
-                    CREATE TABLE url_checks
-                    (
-                        id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-                        url_id BIGINT REFERENCES urls (id) NOT NULL,
-                        status_code INTEGER,
-                        h1 VARCHAR(255),
-                        title VARCHAR(255),
-                        description TEXT,
-                        created_at TIMESTAMP NOT NULL
-                    );
-                    """;
-        }
         log.info(sql);
         try (var connection = dataSource.getConnection();
                 var statement = connection.createStatement()) {
