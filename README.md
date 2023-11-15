@@ -12,7 +12,7 @@ This is an educational project based on the Javalin framework.
 [![Test Coverage](https://api.codeclimate.com/v1/badges/f72e0a051c913e65a2cf/test_coverage)](https://codeclimate.com/github/dariakoval/java-project-72/test_coverage)
 
 
-[Demo on Render](https://page-analyzer-2sps.onrender.com)
+[Demo on Render](https://page-analyzer-bzbb.onrender.com/)
 
 ## Requirements
 
